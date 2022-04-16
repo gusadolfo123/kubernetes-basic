@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kubernetes.io/change-cause: "Initial create"
+  name: front-deployment-test
+  labels:
+    app: front
+spec:
+  # revisionHistoryLimit: 2
+  replicas: 3
+  selector:
+    matchLabels:
+      app: front
+  template:
+    metadata:
+      labels:
+        app: front
+    spec:
+      containers:
+      - name: nginx
+        # image: nginx:alpine
+        image: nginx
+        ports:
+          - containerPort: 80
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "64Mi"
+            cpu: "100m"
+---            
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+  labels:
+    app: front
+spec:
+  type: ClusterIP
+  selector:
+    app: front # label de los pods a observar
+  ports:
+    - protocol: TCP
+      port: 8080 # puerto que se expone
+      targetPort: 80 # puerto a observar

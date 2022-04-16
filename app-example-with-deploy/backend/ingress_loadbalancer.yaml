@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service-load
+  labels:
+    app: golang-backend
+spec:
+  type: LoadBalancer
+  selector:
+    app: golang-backend
+  ports:
+    - name: http
+      port: 6600
+      targetPort: 9090

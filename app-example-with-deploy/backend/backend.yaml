@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kubernetes.io/change-cause: "Initial create"
+  name: golang-backend
+  labels:
+    app: golang-backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: golang-backend
+  template:
+    metadata:
+      labels:
+        app: golang-backend
+    spec:
+      containers:
+      - name: golang-backend
+        image: golang-k8s-example:v2
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            memory: "32Mi"
+            cpu: "125m"
+        ports:
+        - containerPort: 9090
+---            
+apiVersion: v1
+kind: Service
+metadata:
+  name: golang-service-backend
+  labels:
+    app: golang-backend
+spec:
+  type: ClusterIP
+  selector:
+    app: golang-backend # label de los pods a observar
+  ports:
+    - protocol: TCP
+      port: 7000 # puerto que se expone
+      targetPort: 9090 # puerto a observar
