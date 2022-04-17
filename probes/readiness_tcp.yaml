@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: goproxy
+  labels:
+    app: goproxy
+spec:
+  containers:
+  - name: goproxy
+    image: k8s.gcr.io/goproxy:0.1
+    resources:
+      limits:
+        cpu: "1"
+        memory: "200Mi"
+      requests:
+        cpu: "0.5"
+        memory: "100Mi"
+    ports:
+    - containerPort: 8080
+    readinessProbe: # si encuentra un problema des-registra la ip del pod de las ips del servicio para que no reciba requests 
+      tcpSocket:
+        port: 8080
+      initialDelaySeconds: 5
+      periodSeconds: 10
+    livenessProbe:
+      tcpSocket:
+        port: 8080
+      initialDelaySeconds: 15
+      periodSeconds: 20
