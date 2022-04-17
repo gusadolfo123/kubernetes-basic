@@ -1,0 +1,15 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: limit
+  labels:
+    name: limit
+---    
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: pod-demo
+  namespace: limit
+spec:
+  hard:
+    pods: "2"

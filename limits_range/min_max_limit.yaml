@@ -1,0 +1,38 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: limit
+  labels:
+    name: limit
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: min-max
+  namespace: limit
+spec:
+  limits:
+  - max:
+      memory: 1Gi # 1Gi de memoria maximo entre todos los contenedores dentro del namespace
+      cpu: "1"
+    min:
+      memory: 500Mi
+      cpu: "100m"
+    type: Container
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myapp
+  namespace: limit
+  labels:
+    name: myapp
+spec:
+  containers:
+  - name: myapp
+    image: nginx
+    resources:
+      limits:
+        memory: "520Mi"
+        cpu: "500m"
+      
