@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  labels:
+    app: test
+data:
+  nginx: |
+    server {
+        listen       8080;
+        server_name  localhost;
+        location / {
+            root   /usr/share/nginx/html;
+            index  index.html index.htm; 
+        }
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   /usr/share/nginx/html;
+        }
+    }
+  html: |
+    <!DOCTYPE html>
+    <html lang="en">
+
+    <head>
+      <meta charset="UTF-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Document</title>
+    </head>
+
+    <body>
+      Lorem, ipsum dolor sit amet consectetur adipisicing elit. Sit ex provident vitae suscipit dolorum repellat nulla
+      nemo quo nobis minima voluptatibus beatae illo numquam dolore quia, recusandae obcaecati nisi nostrum?
+    </body>
+
+    </html>
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kubernetes.io/change-cause: "Initial create"
+  name: deployment-test
+  labels:
+    app: test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+      - name: nginx-ctr
+        image: nginx:alpine
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "64Mi"
+            cpu: "100m"
+        volumeMounts:
+        - name: nginx-vol
+          mountPath: /etc/nginx/conf.d
+      volumes:
+        - name: nginx-vol
+          configMap:
+            name: nginx-config # nombre del configmap que se utilizara
+            items: 
+            - key: nginx # llave que se debe encontrar en el configmap 
+              path: default.conf # nombre del archivo que se generara con el valor del configmap
