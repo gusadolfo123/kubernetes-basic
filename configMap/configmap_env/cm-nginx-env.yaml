@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  labels:
+    app: test
+data:
+  nginx: |
+    server {
+        listen       8080;
+        server_name  localhost;
+        location / {
+            root   /usr/share/nginx/html;
+            index  index.html index.htm; 
+        }
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   /usr/share/nginx/html;
+        }
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vars
+  labels:
+    app: test
+data:
+  db_host: dev.host.local
+  db_user: dev_user
+  script: |
+    echo DB Host es $DB_HOST1 y DB user es $DB_USER1 > /usr/share/nginx/html/test.html
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kubernetes.io/change-cause: "Initial create"
+  name: deployment-test
+  labels:
+    app: test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+      - name: nginx-ctr
+        image: nginx:alpine
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "64Mi"
+            cpu: "100m"
+        env:
+          - name: DB_HOST1
+            valueFrom:
+              configMapKeyRef:
+                name: vars # nombre del configmap
+                key: db_host
+          - name: DB_USER1
+            valueFrom:
+              configMapKeyRef:
+                name: vars
+                key: db_user
+        volumeMounts:
+          - name: nginx-vol
+            mountPath: /etc/nginx/conf.d
+          - name: script-vol
+            mountPath: /opt
+      volumes:
+        - name: nginx-vol
+          configMap:
+            name: nginx-config # nombre del configmap que se utilizara
+            items: 
+            - key: nginx # llave que se debe encontrar en el configmap 
+              path: default.conf # nombre del archivo que se generara con el valor del configmap
+        - name: script-vol
+          configMap:
+            name: vars
+            items:
+              - key: script
+                path: script.sh
