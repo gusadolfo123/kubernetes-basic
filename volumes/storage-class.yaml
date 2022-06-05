@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sc-pvc
+spec:
+  # storageClassName: manual comentarenado esta seccion el pv se 
+  # crea dinamicamente si no existe uno que cumpla, este se crea en el sc por defecto de kubernetes
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
